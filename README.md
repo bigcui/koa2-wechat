@@ -5,34 +5,43 @@ co-wechat [![NPM version](https://badge.fury.io/js/co-wechat.png)](http://badge.
 
 ## 功能列表
 - 自动回复（文本、图片、语音、视频、音乐、图文）
-- 会话支持（创新功能）
 
 ## Installation
 
 ```sh
-$ npm install co-wechat
+$ npm install koa2-wechat
 ```
 
-## Use with koa
+## Project reference
+
+使用例子代码在这里
+https://github.com/ityao/koa2-antd-sequelizejs-wechat-boilerplate
+
+## Use with koa2
 
 ```js
-var wechat = require('co-wechat');
+import wechat from 'koa2-wechat';
+let config =  {
+    token: 'xxxx',
+    appid: 'wx662592676e879xxx',
+    encodingAESKey: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+}
 
-app.use(wechat('some token').middleware(function *() {
-  // 微信输入信息都在this.weixin上
-  var message = this.weixin;
+app.use(wechat(config).middleware(async(ctx)=>{
+  // 微信输入信息都在ctx.state.weixin上
+  let message = ctx.state.weixin;
   if (message.FromUserName === 'diaosi') {
     // 回复屌丝(普通回复)
-    this.body = 'hehe';
+    ctx.body = 'hehe';
   } else if (message.FromUserName === 'text') {
     //你也可以这样回复text类型的信息
-    this.body = {
+    ctx.body = {
       content: 'text object',
       type: 'text'
     };
   } else if (message.FromUserName === 'hehe') {
     // 回复一段音乐
-    this.body = {
+    ctx.body = {
       type: "music",
       content: {
         title: "来段音乐吧",
@@ -43,13 +52,13 @@ app.use(wechat('some token').middleware(function *() {
     };
   } else if (message.FromUserName === 'kf') {
     // 转发到客服接口
-    this.body = {
+    ctx.body = {
       type: "customerService",
       kfAccount: "test1@test"
     };
   } else {
     // 回复高富帅(图文回复)
-    this.body = [
+    ctx.body = [
       {
         title: '你来我家接我吧',
         description: '这是女神与高富帅之间的对话',
@@ -67,13 +76,13 @@ app.use(wechat('some token').middleware(function *() {
 
 #### 回复文本
 ```js
-this.body = 'Hello world!';
+ctx.body = 'Hello world!';
 // 或者
-this.body = {type: "text", content: 'Hello world!'};
+ctx.body = {type: "text", content: 'Hello world!'};
 ```
 #### 回复图片
 ```js
-this.body = {
+ctx.body = {
   type: "image",
   content: {
     mediaId: 'mediaId'
@@ -82,7 +91,7 @@ this.body = {
 ```
 #### 回复语音
 ```js
-this.body = {
+ctx.body = {
   type: "voice",
   content: {
     mediaId: 'mediaId'
@@ -91,7 +100,7 @@ this.body = {
 ```
 #### 回复视频
 ```js
-this.body = {
+ctx.body = {
   type: "video",
   content: {
     mediaId: 'mediaId',
@@ -101,7 +110,7 @@ this.body = {
 ```
 #### 回复音乐
 ```js
-this.body = {
+ctx.body = {
   title: "来段音乐吧",
   description: "一无所有",
   musicUrl: "http://mp3.com/xx.mp3",
@@ -110,7 +119,7 @@ this.body = {
 ```
 #### 回复图文
 ```js
-this.body = [
+ctx.body = [
   {
     title: '你来我家接我吧',
     description: '这是女神与高富帅之间的对话',
@@ -122,39 +131,16 @@ this.body = [
 
 #### 回复空串
 ```js
-this.body = '';
+ctx.body = '';
 ```
 
 #### 转发到客服接口
 ```js
-this.body = {
+ctx.body = {
   type: "customerService",
   kfAccount: "test1@test" //可选
 };
 ```
-
-### WXSession支持
-由于公共平台应用的客户端实际上是微信，所以采用传统的Cookie来实现会话并不现实，为此中间件模块在openid的基础上添加了Session支持。一旦服务端启用了`koa-generic-session`中间件，在业务中就可以访问`this.wxsession`属性。这个属性与`this.session`行为类似。
-
-```js
-var session = require('koa-generic-session');
-app.use(session());
-app.use(wechat('some token').middleware(function *() {
-  var info = this.weixin;
-  if (info.Content === '=') {
-    var exp = this.wxsession.text.join('');
-    this.wxsession.text = '';
-    this.body = exp;
-  } else {
-    this.wxsession.text = this.wxsession.text || [];
-    this.wxsession.text.push(info.Content);
-    this.body = '收到' + info.Content;
-  }
-}));
-```
-
-`this.wxsession`与`this.session`采用相同的存储引擎，这意味着如果采用redis作为存储，这样`wxsession`可以实现跨进程共享。
-
 ## Show cases
 ### Node.js API自动回复
 
@@ -170,7 +156,7 @@ app.use(wechat('some token').middleware(function *() {
 原始API文档请参见：[消息接口指南](http://mp.weixin.qq.com/wiki/index.php?title=消息接口指南)。
 
 ## 交流群
-QQ群：157964097，使用疑问，开发，贡献代码请加群。
+QQ群：157964097，使用疑问，开发，贡献代码请加群。进群申请暗号: "Silver好靓仔"
 
 ## 捐赠
 如果您觉得Wechat对您有帮助，欢迎请作者一杯咖啡
@@ -181,16 +167,3 @@ QQ群：157964097，使用疑问，开发，贡献代码请加群。
 
 ## License
 The MIT license.
-
-## Contributors
-
-```
- project  : co-wechat
- repo age : 4 months
- active   : 9 days
- commits  : 19
- files    : 11
- authors  :
-    13  Jackson Tian  68.4%
-     6  ifeiteng      31.6%
-```
